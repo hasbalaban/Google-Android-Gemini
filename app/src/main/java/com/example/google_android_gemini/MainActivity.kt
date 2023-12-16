@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -76,10 +77,56 @@ fun SummarizeScreen(
     var prompt by remember { mutableStateOf("") }
     Column(
         modifier = Modifier
+            .fillMaxSize()
             .padding(all = 8.dp)
-            .verticalScroll(rememberScrollState())
     ) {
-        Row {
+
+        Column(modifier = Modifier.fillMaxHeight(0.9f)) {
+
+            when (uiState) {
+                SummarizeUiState.Initial -> {
+                    // Nothing is shown
+                }
+
+                SummarizeUiState.Loading -> {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .padding(all = 8.dp)
+                            .align(Alignment.CenterHorizontally)
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                is SummarizeUiState.Success -> {
+                    Row(
+                        modifier = Modifier
+                            .padding(all = 8.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        Icon(
+                            Icons.Outlined.Person,
+                            contentDescription = "Person Icon"
+                        )
+                        Text(
+                            text = uiState.outputText,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                    }
+                }
+
+                is SummarizeUiState.Error -> {
+                    Text(
+                        text = uiState.errorMessage,
+                        color = Color.Red,
+                        modifier = Modifier.padding(all = 8.dp)
+                    )
+                }
+            }
+        }
+
+        Row (modifier = Modifier.fillMaxHeight(1f)){
             TextField(
                 value = prompt,
                 label = { Text(stringResource(R.string.summarize_label)) },
@@ -101,43 +148,6 @@ fun SummarizeScreen(
                     .align(Alignment.CenterVertically)
             ) {
                 Text(stringResource(R.string.action_go))
-            }
-        }
-        when (uiState) {
-            SummarizeUiState.Initial -> {
-                // Nothing is shown
-            }
-
-            SummarizeUiState.Loading -> {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .padding(all = 8.dp)
-                        .align(Alignment.CenterHorizontally)
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-
-            is SummarizeUiState.Success -> {
-                Row(modifier = Modifier.padding(all = 8.dp)) {
-                    Icon(
-                        Icons.Outlined.Person,
-                        contentDescription = "Person Icon"
-                    )
-                    Text(
-                        text = uiState.outputText,
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
-                }
-            }
-
-            is SummarizeUiState.Error -> {
-                Text(
-                    text = uiState.errorMessage,
-                    color = Color.Red,
-                    modifier = Modifier.padding(all = 8.dp)
-                )
             }
         }
     }
