@@ -70,7 +70,8 @@ class MainActivity : ComponentActivity() {
                     }
 
                     val generativeModel = GenerativeModel(
-                        modelName = "gemini-pro-vision",
+                        //modelName = "gemini-pro-vision",
+                        modelName = "gemini-pro",
                         apiKey = BuildConfig.apiKey,
                         safetySettings = safetySettings,
                         generationConfig = generationConfig

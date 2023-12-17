@@ -26,27 +26,25 @@ class SummarizeViewModel(
 
         viewModelScope.launch {
             try {
+                /*
                 val inputContent = content {
                     image(bitmap)
                     text("What's is it?")
                 }
 
                 val response = generativeModel.generateContent(prompt)
-
-                println(response.text)
-                println("----")
-                response.candidates.forEach {
-                    println(it.content)
-                }
-                println("----")
-                println(response.promptFeedback?.blockReason)
-                println("----")
-                response.promptFeedback?.safetyRatings?.forEach {
-                    println(it)
-                }
-                response.text?.let { outputContent ->
+                 response.text?.let { outputContent ->
                     _uiState.value = SummarizeUiState.Success(outputContent)
                 }
+                 */
+
+                var fullResponse = ""
+                generativeModel.generateContentStream(prompt).collect { chunk ->
+                    fullResponse += chunk.text
+                    _uiState.value = SummarizeUiState.Success(fullResponse)
+                }
+
+
             } catch (e: Exception) {
                 _uiState.value = SummarizeUiState.Error(e.localizedMessage ?: "")
             }
