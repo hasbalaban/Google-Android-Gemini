@@ -1,8 +1,10 @@
 package com.example.google_android_gemini
 
+import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.content
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,14 +19,19 @@ class SummarizeViewModel(
     val uiState: StateFlow<SummarizeUiState> =
         _uiState.asStateFlow()
 
-    fun summarize(inputText: String) {
+    fun summarize(inputText: String, bitmap: Bitmap) {
         _uiState.value = SummarizeUiState.Loading
 
         val prompt = "Summarize the following text for me: $inputText"
 
         viewModelScope.launch {
             try {
-                val response = generativeModel.generateContent(inputText)
+                val inputContent = content {
+                    image(bitmap)
+                    text("What's is it?")
+                }
+
+                val response = generativeModel.generateContent(prompt)
 
                 println(response.text)
                 println("----")

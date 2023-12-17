@@ -1,5 +1,7 @@
 package com.example.google_android_gemini
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -25,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,11 +35,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -49,7 +46,6 @@ import com.google.ai.client.generativeai.type.BlockThreshold
 import com.google.ai.client.generativeai.type.GenerationConfig
 import com.google.ai.client.generativeai.type.HarmCategory
 import com.google.ai.client.generativeai.type.SafetySetting
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,7 +57,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    val coroutines = rememberCoroutineScope()
                     val generationConfig = GenerationConfig.builder().apply {
                         temperature = 0.9f
                     }.build()
@@ -75,21 +70,11 @@ class MainActivity : ComponentActivity() {
                     }
 
                     val generativeModel = GenerativeModel(
-                        modelName = "gemini-pro",
+                        modelName = "gemini-pro-vision",
                         apiKey = BuildConfig.apiKey,
                         safetySettings = safetySettings,
                         generationConfig = generationConfig
                     )
-
-                    LaunchedEffect(key1 = Unit) {
-                        coroutines.launch {
-                           val responseText =  generativeModel.generateContent("request text").text
-                            println(responseText)
-                        }
-                    }
-
-
-
 
 
                     val viewModel = SummarizeViewModel(generativeModel)
@@ -107,8 +92,19 @@ internal fun SummarizeRoute(
 ) {
     val summarizeUiState by summarizeViewModel.uiState.collectAsState()
 
+    val context = LocalContext.current
     SummarizeScreen(summarizeUiState, onSummarizeClicked = { inputText ->
-        summarizeViewModel.summarize(inputText)
+
+        val option = BitmapFactory.Options()
+        option.inPreferredConfig = Bitmap.Config.ARGB_8888
+        val bitmap = BitmapFactory.decodeResource(
+            context.resources,
+             R.drawable.ttt,
+            option
+        )
+
+
+        summarizeViewModel.summarize(inputText,bitmap)
     })
 }
 
