@@ -25,10 +25,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +45,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.ai.client.generativeai.GenerativeModel
 import com.example.google_android_gemini.ui.theme.GoogleAndroidGeminiTheme
+import com.google.ai.client.generativeai.type.BlockThreshold
+import com.google.ai.client.generativeai.type.GenerationConfig
+import com.google.ai.client.generativeai.type.HarmCategory
+import com.google.ai.client.generativeai.type.SafetySetting
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,11 +61,39 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
+                    val coroutines = rememberCoroutineScope()
+                    val generationConfig = GenerationConfig.builder().apply {
+                        temperature = 0.9f
+                    }.build()
+
+                    val safetySettings = ArrayList<SafetySetting>()
+                    safetySettings.apply {
+                        add(SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.ONLY_HIGH))
+                        add(SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.ONLY_HIGH))
+                        add(SafetySetting(HarmCategory.SEXUALLY_EXPLICIT, BlockThreshold.ONLY_HIGH))
+                        add(SafetySetting(HarmCategory.HATE_SPEECH, BlockThreshold.ONLY_HIGH))
+                    }
+
                     val generativeModel = GenerativeModel(
                         modelName = "gemini-pro",
-                        apiKey = BuildConfig.apiKey
+                        apiKey = BuildConfig.apiKey,
+                        safetySettings = safetySettings,
+                        generationConfig = generationConfig
                     )
+
+                    LaunchedEffect(key1 = Unit) {
+                        coroutines.launch {
+                           val responseText =  generativeModel.generateContent("request text").text
+                            println(responseText)
+                        }
+                    }
+
+
+
+
+
                     val viewModel = SummarizeViewModel(generativeModel)
+
                     SummarizeRoute(viewModel)
                 }
             }

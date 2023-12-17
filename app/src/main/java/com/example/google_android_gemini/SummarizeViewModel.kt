@@ -24,7 +24,19 @@ class SummarizeViewModel(
 
         viewModelScope.launch {
             try {
-                val response = generativeModel.generateContent(prompt)
+                val response = generativeModel.generateContent(inputText)
+
+                println(response.text)
+                println("----")
+                response.candidates.forEach {
+                    println(it.content)
+                }
+                println("----")
+                println(response.promptFeedback?.blockReason)
+                println("----")
+                response.promptFeedback?.safetyRatings?.forEach {
+                    println(it)
+                }
                 response.text?.let { outputContent ->
                     _uiState.value = SummarizeUiState.Success(outputContent)
                 }
