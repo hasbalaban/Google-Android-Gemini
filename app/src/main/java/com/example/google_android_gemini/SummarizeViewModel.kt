@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.Content
 import com.google.ai.client.generativeai.type.content
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +20,7 @@ class SummarizeViewModel(
     val uiState: StateFlow<SummarizeUiState> =
         _uiState.asStateFlow()
 
+    val history : ArrayList<Content> = ArrayList()
     fun summarize(inputText: String, bitmap: Bitmap) {
         _uiState.value = SummarizeUiState.Loading
 
@@ -26,24 +28,18 @@ class SummarizeViewModel(
 
         viewModelScope.launch {
             try {
-                /*
-                val inputContent = content {
-                    image(bitmap)
-                    text("What's is it?")
-                }
 
-                val response = generativeModel.generateContent(prompt)
-                 response.text?.let { outputContent ->
-                    _uiState.value = SummarizeUiState.Success(outputContent)
-                }
-                 */
+                val chat = generativeModel.startChat(history).sendMessage(inputText)
 
-                var fullResponse = ""
-                generativeModel.generateContentStream(prompt).collect { chunk ->
-                    fullResponse += chunk.text
-                    _uiState.value = SummarizeUiState.Success(fullResponse)
+                chat.text?.let {response ->
+                    history.addAll(
+                        listOf(
+                            content(role = "user") { text(inputText) },
+                            content(role = "model") { text(response) }
+                        )
+                    )
+                    _uiState.value = SummarizeUiState.Success(response)
                 }
-
 
             } catch (e: Exception) {
                 _uiState.value = SummarizeUiState.Error(e.localizedMessage ?: "")

@@ -57,7 +57,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    val generationConfig = GenerationConfig.builder().apply {
+                    val generationConfig = GenerationConfig.
+
+                    builder().apply {
                         temperature = 0.9f
                     }.build()
 
